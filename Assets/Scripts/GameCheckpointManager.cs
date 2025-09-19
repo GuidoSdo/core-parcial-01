@@ -5,12 +5,12 @@ public class GameCheckpointManager : MonoBehaviour
   public static GameCheckpointManager Instance;
 
     [Header("Player Settings")]
-    [SerializeField] private Transform player;
+    [SerializeField] private Transform player; //Agregar GameObject Player en el inspector
     [SerializeField] private int maxLives = 3;
     private int currentLives;
 
     [Header("CheckPoint Settings")]
-    [SerializeField] private Checkpoint initialCheckpoint;
+    [SerializeField] private Checkpoint initialCheckpoint; //Agregar GameObject del checkpoint inicial en el inspector
     [SerializeField] private Checkpoint currentCheckpoint;
     private int lastCheckpointID = -1;
 
