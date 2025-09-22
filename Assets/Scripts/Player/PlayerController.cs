@@ -2,88 +2,97 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
-    // Speed at which the player moves.
 
-    public float speed = 0;
-    // Variable to keep track of collected "PickUp" objects.
+    public float playerSpeed = 10f;
+    public float crouchMultiplier = 0.5f;
+    private bool isCrouching = false;
 
-    public TextMeshProUGUI countText;
-
-    public TextMeshProUGUI  winTextObject;
-
-    private int count = 0;
-
-
-    // Rigidbody of the player.
     private Rigidbody rb;
-    private float movementX;
-    private float movementY;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private Collider col;
+    public IPlayerMovement playerMovement;
+    private Vector2 lastInput = Vector2.zero;
+    void Awake()
     {
-        SetCountText();
+        playerMovement ??= new PhysicsPlayerMovement();
+        InitializePlayerComponents();
+        SetCenterOfMass();
+    }
+
+    private void SetCenterOfMass()
+    {
+        // Ajustar el centro de masa al piso para evitar que el prefab se caiga
+        // Documentación oficial: https://docs.unity3d.com/ScriptReference/Rigidbody-centerOfMass.html
+        Vector3 localBase = col.bounds.center - new Vector3(0, col.bounds.extents.y, 0) - transform.position;
+        rb.centerOfMass = localBase;
+    }
+
+    private void InitializePlayerComponents()
+    {
         rb = GetComponent<Rigidbody>();
- // Initially set the win text to be inactive.
-        winTextObject.gameObject.SetActive(false);
-
+        col = GetComponent<Collider>();
+        string missing = null;
+        if (rb == null)
+            missing = "Rigidbody";
+        if (col == null)
+            missing = missing == null ? "Collider" : missing + ", Collider";
+        if (GetComponent<PlayerInput>() == null)
+            missing = missing == null ? "PlayerInput" : missing + ", PlayerInput";
+        if (missing != null)
+        {
+            Debug.LogWarning($"[PlayerController] El prefab del jugador no tiene los siguientes componentes requeridos: {missing}. El movimiento y las colisiones no funcionarán correctamente.");
+            throw new MissingComponentException($"[PlayerController] Faltan los siguientes componentes en el prefab del jugador: {missing}");
+        }
     }
 
-    private void FixedUpdate()
-    {
-        // Create a 3D movement vector using the X and Y inputs.
-        Vector3 movement = new Vector3(movementX, 0.0f, movementY);
-        // Apply force to the Rigidbody to move the player.
-        rb.AddForce(movement * speed);
-
-    }
+    //  WIP
     void OnTriggerEnter(Collider other)
     {
         // Deactivate the collided object (making it disappear).
         if (other.gameObject.CompareTag("PickUp"))
         {
-
             other.gameObject.SetActive(false);
-            count++;
-             // Update the count display.
-            SetCountText();
-
         }
     }
 
-    // This function is called when a move input is detected.
-    void OnMove(InputValue movementValue)
+    // Este método lo invoca automáticamente PlayerInput cuando detecta la acción de movimiento
+    public void OnMove(InputValue movementValue)
     {
-        // Convert the input value into a Vector2 for movement.
-        Vector2 movementVector = movementValue.Get<Vector2>();
-        // Store the X and Y components of the movement.
-        movementX = movementVector.x;
-        movementY = movementVector.y;
+        lastInput = movementValue.Get<Vector2>();
     }
-
-    void SetCountText()
+    private void FixedUpdate()
     {
-        // Update the count text with the current count.
-        countText.text = "Count: " + count.ToString();
-
-        if (count >= 3)
+        // Ajustamos la velocidad si el jugador está agachado
+        float finalSpeed = playerSpeed;
+        if (isCrouching)
         {
-            winTextObject.gameObject.SetActive(true);
-
-            Destroy(GameObject.FindGameObjectWithTag("Enemy"));
+            finalSpeed *= crouchMultiplier;
         }
+
+        // Aplicamos la física linearVelocity y mantenemos el movimiento mientras haya input
+        playerMovement.OnMove(lastInput, rb, finalSpeed);
     }
 
     private void OnCollisionEnter(Collision collision)
-{
-   if (collision.gameObject.CompareTag("Enemy"))
-   {
-       // Destroy the current object
-       Destroy(gameObject); 
-       // Update the winText to display "You Lose!"
-       winTextObject.gameObject.SetActive(true);
-       winTextObject.GetComponent<TextMeshProUGUI>().text = "You Lose!";
-   }
-}
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    // TODO: Mejorar la lógica de agachado. Actualmente el estado se alterna con la misma tecla; se requiere que el jugador permanezca agachado solo mientras la tecla esté presionada.
+    public void OnCrouch(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            isCrouching = !isCrouching;
+            Debug.Log($"Estado de agachado: {isCrouching}");
+        }
+    }
+
 }

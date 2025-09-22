@@ -1,5 +1,10 @@
 using UnityEngine;
 
+/// <summary>
+/// Estado de patrulla del enemigo.
+/// Se encarga de mover al enemigo entre los puntos de patrulla definidos usando NavMeshAgent.
+/// Cambia al estado de persecuciÃ³n si detecta al jugador.
+/// </summary>
 public class PatrolState : EnemyState
 {
     public PatrolState(EnemyMovement enemyMovement) : base(enemyMovement) { }
@@ -15,13 +20,20 @@ public class PatrolState : EnemyState
 
     public override void UpdateState()
     {
-        // Verifica si el jugador se encuentra en rango de visión
+        CheckForPlayerAndChangeState();
+        HandlePatrolMovement();
+    }
+
+    private void CheckForPlayerAndChangeState()
+    {
         if (enemy.CheckForPlayer())
         {
             enemy.ChangeState(new ChaseState(enemy));
         }
+    }
 
-        // Si el enemigo llegó al punto de destino, se mueve al siguiente punto
+    private void HandlePatrolMovement()
+    {
         if (enemy.navMeshAgent.remainingDistance < 0.5f && !enemy.navMeshAgent.pathPending)
         {
             if (enemy.GetCurrentPointIndex() >= enemy.GetPatrolPoints().Length - 1)

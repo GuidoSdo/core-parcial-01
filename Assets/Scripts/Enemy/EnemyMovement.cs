@@ -1,15 +1,14 @@
 using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(UnityEngine.AI.NavMeshAgent))]
 public class EnemyMovement : MonoBehaviour
 {
-    // --- Atributos de Configuración ---
+    // --- Atributos de Configuraciï¿½n ---
     [Header("Enemy Patrol Settings")]
     [SerializeField] private Transform[] enemyPatrolPoints; //Vincular los puntos de patrulla
-    
-    
 
-    // --- Atributos de detección ---
+    // --- Atributos de detecciï¿½n ---
     [Header("Player Detection Settings")]
     [SerializeField] private float sightRange = 10f;
     [SerializeField] private float attackRange = 2f;
@@ -18,15 +17,15 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private LayerMask obstacleLayer; // Vincular la capa de obstaculo
 
     // --- Atributos de Estado (privados) ---
-    [HideInInspector] public UnityEngine.AI.NavMeshAgent navMeshAgent; 
-    [HideInInspector] public Transform player; 
+    [HideInInspector] public UnityEngine.AI.NavMeshAgent navMeshAgent;
+    [HideInInspector] public Transform player;
     private EnemyState currentState;
     private int currentEnemyPointIndex = 0;
     private int patrolDirection = 1;
 
     // Getters y setters
     public Transform[] GetPatrolPoints() { return enemyPatrolPoints; }
-    public int GetCurrentPointIndex() { return currentEnemyPointIndex;}
+    public int GetCurrentPointIndex() { return currentEnemyPointIndex; }
     public float GetSightRange() { return sightRange; }
     public float GetAttackRange() { return attackRange; }
     public float GetAlertDuration() { return alertDuration; }
@@ -41,20 +40,22 @@ public class EnemyMovement : MonoBehaviour
         currentEnemyPointIndex += patrolDirection;
     }
 
-    //Método que cambia el estado del enemigo
+    //Mï¿½todo que cambia el estado del enemigo
     public void ChangeState(EnemyState newState)
     {
-        if (currentState != null)
-        {
-            currentState.ExitState();
-        }
+        currentState?.ExitState();
         currentState = newState;
         currentState.EnterState();
     }
 
-    //Método que verifica si el jugador está a la vista
+    //Mï¿½todo que verifica si el jugador estï¿½ a la vista
     public bool CheckForPlayer()
     {
+        if (player == null)
+        {
+            Debug.LogWarning("[EnemyMovement] No se puede detectar al jugador porque 'player' es null.");
+            return false;
+        }
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, sightRange, playerLayer);
         foreach (var hitCollider in hitColliders)
         {
@@ -72,32 +73,54 @@ public class EnemyMovement : MonoBehaviour
         return false;
     }
 
-    
+
     void Start()
     {
-        
-        navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        InitializeReferences();
+        InitializePatrol();
+    }
 
-        // Establece el punto de origen del patrón de patrulla
-        if (enemyPatrolPoints.Length > 0)
+    private void InitializePatrol()
+    {
+        if (HasPatrolPoints())
         {
             currentEnemyPointIndex = 0;
-            navMeshAgent.enabled = false;
-            transform.position = enemyPatrolPoints[currentEnemyPointIndex].position;
-            navMeshAgent.enabled = true;
+            // Ahora se usa Warp para mover el agente correctamente en el NavMesh:
+            // Ver documentaciÃ³n oficial: https://docs.unity3d.com/ScriptReference/AI.NavMeshAgent.Warp.html
+            navMeshAgent.Warp(enemyPatrolPoints[currentEnemyPointIndex].position);
 
             ChangeState(new PatrolState(this));
+        }
+        else
+        {
+            Debug.LogWarning("[EnemyMovement] No se establecieron puntos de patrulla en 'enemyPatrolPoints'. El enemigo no podrÃ¡ patrullar.");
+        }
+    }
+
+    // Verifica si hay puntos de patrulla asignados
+    private bool HasPatrolPoints()
+    {
+        return enemyPatrolPoints.Length > 0;
+    }
+
+
+    private void InitializeReferences()
+    {
+        navMeshAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+        {
+            player = playerObj.transform;
+        }
+        else
+        {
+            Debug.LogWarning("[EnemyMovement] No se encontrÃ³ un GameObject con el tag 'Player'. El patrullaje funcionarÃ¡, pero no la detecciÃ³n/persecuciÃ³n.");
+            player = null;
         }
     }
 
     void Update()
     {
-        if (currentState != null)
-        {
-            currentState.UpdateState();
-        }
+        currentState?.UpdateState();
     }
-
-   
 }
