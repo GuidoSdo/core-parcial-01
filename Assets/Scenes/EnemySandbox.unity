@@ -317,8 +317,12 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 560399302767185177, guid: e4bebdff45235a14193ba978567dd32e, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 560399302767185177, guid: e4bebdff45235a14193ba978567dd32e, type: 3}
       propertyPath: m_TagString
-      value: Untagged
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 986463141200595801, guid: e4bebdff45235a14193ba978567dd32e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2701,6 +2705,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2234363454583839871, guid: 57657fa5968869d4bbfde86994a5fa45, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1929786049}
+    - targetCorrespondingSourceObject: {fileID: 2234363454583839871, guid: 57657fa5968869d4bbfde86994a5fa45, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1929786054}
   m_SourcePrefab: {fileID: 100100000, guid: 57657fa5968869d4bbfde86994a5fa45, type: 3}
 --- !u!43 &1560438458
 Mesh:
@@ -3339,12 +3346,12 @@ MonoBehaviour:
   enemyPatrolPoints:
   - {fileID: 322233940}
   - {fileID: 802407287}
-  sightRange: 2
+  sightRange: 5
   attackRange: 2
   alertDuration: 5
   playerLayer:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 64
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 1
@@ -3377,6 +3384,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1846378147292148841, guid: 57657fa5968869d4bbfde86994a5fa45, type: 3}
   m_PrefabInstance: {fileID: 1541314312}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1929786054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929786043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa4e39ad93d9d814db0e7d823e10f9cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 1
+  environmentMask:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!1 &1947891483
 GameObject:
   m_ObjectHideFlags: 0
