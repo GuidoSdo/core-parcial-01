@@ -2,22 +2,26 @@ using UnityEngine;
 
 public class Checkpoint : MonoBehaviour
 {
-    
+
     [SerializeField] private int checkpointID;
     private GameCheckpointManager gameManager;
     private void Awake()
     {
         gameManager = FindFirstObjectByType<GameCheckpointManager>();
-
-        if (gameManager == null)
+        if (gameManager != null)
         {
-            Debug.LogError("GameCheckpointManager not found in the scene! Please add a GameCheckpointManager script to a GameObject.");
+            gameManager.SetCurrentCheckpoint(this);
+            Debug.Log("Player reached checkpoint " + this.checkpointID);
+        }
+        else
+        {
+            Debug.LogError("No GameCheckpointManager found when reaching checkpoint!");
         }
     }
 
-   
+
     public int GetCheckpointID()
-    { 
+    {
         return checkpointID;
     }
 

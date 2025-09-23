@@ -2,19 +2,19 @@ using UnityEngine;
 
 public abstract class EnemyState 
 {
-    protected EnemyMovement enemy;
+    protected EnemyPatrolAndChase enemy;
 
-    public EnemyState(EnemyMovement enemyMovement)
+    public EnemyState(EnemyPatrolAndChase enemyMovement)
     { 
         enemy = enemyMovement; 
     }
 
-    //Método que se llama una vez al entrar en el estado.
+    //Mï¿½todo que se llama una vez al entrar en el estado.
     public abstract void EnterState();
 
-    //Método que se llama cada frame mientras el estado está activo.
+    //Mï¿½todo que se llama cada frame mientras el estado estï¿½ activo.
     public abstract void UpdateState();
 
-    //Método que se llama una vez al salir del estado.
+    //Mï¿½todo que se llama una vez al salir del estado.
     public abstract void ExitState();
 }

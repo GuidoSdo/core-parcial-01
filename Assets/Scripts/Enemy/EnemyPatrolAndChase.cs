@@ -1,8 +1,12 @@
 using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Controlador de IA para enemigos que patrullan entre puntos y persiguen al jugador si lo detectan.
+/// Gestiona los estados de patrulla, persecución y alerta usando NavMeshAgent y detección por física.
+/// </summary>
 [RequireComponent(typeof(UnityEngine.AI.NavMeshAgent))]
-public class EnemyMovement : MonoBehaviour
+public class EnemyPatrolAndChase : MonoBehaviour
 {
     // --- Atributos de Configuraci�n ---
     [Header("Enemy Patrol Settings")]
@@ -49,19 +53,26 @@ public class EnemyMovement : MonoBehaviour
     }
 
     //M�todo que verifica si el jugador est� a la vista
+    // Usar un buffer estático para evitar asignaciones
+    private static readonly Collider[] playerDetectionBuffer = new Collider[8];
     public bool CheckForPlayer()
     {
-        if (player == null)
+        if (playerLayer == 0)
         {
-            Debug.LogWarning("[EnemyMovement] No se puede detectar al jugador porque 'player' es null.");
+            Debug.LogWarning("[EnemyPatrolAndChase] LayerMask de player no asignado.");
             return false;
         }
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, sightRange, playerLayer);
-        foreach (var hitCollider in hitColliders)
+        if (player == null)
         {
+            Debug.LogWarning("[EnemyPatrolAndChase] No se puede detectar al jugador porque 'player' es null.");
+            return false;
+        }
+        int count = Physics.OverlapSphereNonAlloc(transform.position, sightRange, playerDetectionBuffer, playerLayer);
+        for (int i = 0; i < count; i++)
+        {
+            var hitCollider = playerDetectionBuffer[i];
             Vector3 directionToPlayer = (hitCollider.transform.position - transform.position).normalized;
-            RaycastHit hit;
-            if (Physics.Raycast(transform.position, directionToPlayer, out hit, sightRange, obstacleLayer))
+            if (Physics.Raycast(transform.position, directionToPlayer, out RaycastHit hit, sightRange, obstacleLayer))
             {
                 if (hit.transform != hitCollider.transform)
                 {
@@ -73,7 +84,12 @@ public class EnemyMovement : MonoBehaviour
         return false;
     }
 
-
+    // Gizmos para visualizar el rango de detección en el editor
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, sightRange);
+    }
     void Start()
     {
         InitializeReferences();

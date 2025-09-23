@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class PatrolState : EnemyState
 {
-    public PatrolState(EnemyMovement enemyMovement) : base(enemyMovement) { }
+    public PatrolState(EnemyPatrolAndChase enemyMovement) : base(enemyMovement) { }
 
     public override void EnterState()
     {

@@ -10,12 +10,16 @@ public class FieldOfView : MonoBehaviour
 
     void Update()
     {
-        RaycastHit hit;
+        if (playerMask == 0)
+        {
+            Debug.LogWarning("[FieldOfView] LayerMask de player no asignado.");
+            return;
+        }
         Vector3 eyePosition = transform.position;
         eyePosition.y = transform.position.y + 1;
 
         // Dispara un solo rayo que puede detectar tanto al jugador como a un obstáculo
-        if (Physics.Raycast(eyePosition, transform.forward, out hit, RAYCAST_DISTANCE, playerMask | obstacleMask | environmentMask, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(eyePosition, transform.forward, out RaycastHit hit, RAYCAST_DISTANCE, playerMask | obstacleMask | environmentMask, QueryTriggerInteraction.Ignore))
         {
             Debug.DrawRay(eyePosition, transform.forward * hit.distance, Color.green);
 
@@ -62,4 +66,3 @@ public class FieldOfView : MonoBehaviour
         return false;
     }
 }
-//hola Gio :D

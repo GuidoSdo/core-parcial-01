@@ -1,21 +1,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using TMPro;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("Settings")]
+    [SerializeField]
+    private float playerSpeed = 10f;
+    [SerializeField]
+    private float crouchMultiplier = 0.5f; // Multiplicador de velocidad al agacharse.
 
-    public float playerSpeed = 10f;
-    public float crouchMultiplier = 0.5f;
     private bool isCrouching = false;
-
     private Rigidbody rb;
     private Collider col;
     public IPlayerMovement playerMovement;
     private Vector2 lastInput = Vector2.zero;
+
     void Awake()
     {
         playerMovement ??= new PhysicsPlayerMovement();
@@ -23,25 +25,14 @@ public class PlayerController : MonoBehaviour
         SetCenterOfMass();
     }
 
-    private void SetCenterOfMass()
-    {
-        // Ajustar el centro de masa al piso para evitar que el prefab se caiga
-        // Documentación oficial: https://docs.unity3d.com/ScriptReference/Rigidbody-centerOfMass.html
-        Vector3 localBase = col.bounds.center - new Vector3(0, col.bounds.extents.y, 0) - transform.position;
-        rb.centerOfMass = localBase;
-    }
-
     private void InitializePlayerComponents()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
         string missing = null;
-        if (rb == null)
-            missing = "Rigidbody";
-        if (col == null)
-            missing = missing == null ? "Collider" : missing + ", Collider";
-        if (GetComponent<PlayerInput>() == null)
-            missing = missing == null ? "PlayerInput" : missing + ", PlayerInput";
+        if (rb == null) missing = "Rigidbody";
+        if (col == null) missing = missing == null ? "Collider" : missing + ", Collider";
+        if (GetComponent<PlayerInput>() == null) missing = missing == null ? "PlayerInput" : missing + ", PlayerInput";
         if (missing != null)
         {
             Debug.LogWarning($"[PlayerController] El prefab del jugador no tiene los siguientes componentes requeridos: {missing}. El movimiento y las colisiones no funcionarán correctamente.");
@@ -49,45 +40,24 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    //  WIP
-    void OnTriggerEnter(Collider other)
+    private void SetCenterOfMass()
     {
-        // Deactivate the collided object (making it disappear).
-        if (other.gameObject.CompareTag("PickUp"))
-        {
-            other.gameObject.SetActive(false);
-        }
+        // Ajustar el centro de masa al piso para evitar que el prefab se caiga.
+        // https://docs.unity3d.com/ScriptReference/Rigidbody-centerOfMass.html
+        Vector3 localBase = col.bounds.center - new Vector3(0, col.bounds.extents.y, 0) - transform.position;
+        rb.centerOfMass = localBase;
     }
 
-    // Este método lo invoca automáticamente PlayerInput cuando detecta la acción de movimiento
+    // Invocado por PlayerInput: movimiento.
     public void OnMove(InputValue movementValue)
     {
         lastInput = movementValue.Get<Vector2>();
     }
-    private void FixedUpdate()
-    {
-        // Ajustamos la velocidad si el jugador está agachado
-        float finalSpeed = playerSpeed;
-        if (isCrouching)
-        {
-            finalSpeed *= crouchMultiplier;
-        }
 
-        // Aplicamos la física linearVelocity y mantenemos el movimiento mientras haya input
-        playerMovement.OnMove(lastInput, rb, finalSpeed);
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Enemy"))
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    // TODO: Mejorar la lógica de agachado. Actualmente el estado se alterna con la misma tecla; se requiere que el jugador permanezca agachado solo mientras la tecla esté presionada.
+    // Invocado por PlayerInput: agachado.
     public void OnCrouch(InputValue value)
     {
+        // TODO: Mejorar lógica de agachado.
         if (value.isPressed)
         {
             isCrouching = !isCrouching;
@@ -95,4 +65,28 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void FixedUpdate()
+    {
+        // ** Sección para manejar el movimiento continuo. **
+        // Velocidad efectiva (aplica multiplicador si está agachado).
+        float finalSpeed = isCrouching ? playerSpeed * crouchMultiplier : playerSpeed;
+        // Física + input continuo.
+        // Aplicar movimiento.
+        playerMovement.OnMove(lastInput, rb, finalSpeed);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // Recoger ítems.
+        if (other.gameObject.CompareTag("PickUp"))
+            other.gameObject.SetActive(false);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("Collision detected with " + collision.gameObject.name);
+        // Morir al tocar enemigos.
+        // if (collision.gameObject.CompareTag("Enemy"))
+        //   Destroy(gameObject);
+    }
 }
