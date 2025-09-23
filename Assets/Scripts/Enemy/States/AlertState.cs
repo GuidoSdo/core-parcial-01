@@ -4,7 +4,7 @@ public class AlertState : EnemyState
 {
     private float alertTimer;
 
-    public AlertState(EnemyMovement enemyMovement) : base(enemyMovement) { }
+    public AlertState(EnemyPatrolAndChase enemyMovement) : base(enemyMovement) { }
 
     public override void EnterState()
     {
@@ -19,7 +19,7 @@ public class AlertState : EnemyState
             return;
         }
 
-        // Cuenta regresiva para volver al estado de Patrulla una vez que dejó de ver al player
+        // Cuenta regresiva para volver al estado de Patrulla una vez que dejï¿½ de ver al player
         if (enemy.navMeshAgent.remainingDistance < 0.5f)
         {
             alertTimer -= Time.deltaTime;

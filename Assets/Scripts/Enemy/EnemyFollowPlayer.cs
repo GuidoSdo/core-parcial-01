@@ -1,28 +1,28 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+/// <summary>
+/// Clase que permite que el enemigo siga al jugador utilizando el sistema NavMeshAgent.
+/// Asigna el destino del enemigo a la posición actual del jugador en cada frame.
+/// </summary>
+[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyFollowPlayer : MonoBehaviour
 {
 
- // Reference to the player's transform.
     public Transform player;
 
-     // Reference to the NavMeshAgent component for pathfinding.
     private NavMeshAgent navMeshAgent;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
 
     }
-
-    // Update is called once per frame
     void Update()
     {
-           if (player != null)
-       {    
-           navMeshAgent.SetDestination(player.position);
-       } 
+        if (player != null)
+        {
+            navMeshAgent.SetDestination(player.position);
+        }
     }
 }

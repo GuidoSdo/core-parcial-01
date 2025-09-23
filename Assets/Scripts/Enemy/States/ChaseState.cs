@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class ChaseState : EnemyState
 {
-    public ChaseState(EnemyMovement enemyMovement) : base(enemyMovement) { }
+    public ChaseState(EnemyPatrolAndChase enemyMovement) : base(enemyMovement) { }
 
     public override void EnterState() { }
 
     public override void UpdateState()
     {
-        // Perseguir al jugador mientras esté a la vista.
+        // Perseguir al jugador mientras estï¿½ a la vista.
         if (enemy.CheckForPlayer())
         {
             enemy.navMeshAgent.SetDestination(enemy.player.position);
@@ -17,7 +17,7 @@ public class ChaseState : EnemyState
                 Debug.Log("Player is getting attacked");
             }
         }
-        // En caso de que el jugador salga del rango de visión cambia al estado de alerta
+        // En caso de que el jugador salga del rango de visiï¿½n cambia al estado de alerta
         else
         {
             enemy.ChangeState(new AlertState(enemy));
